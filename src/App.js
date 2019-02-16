@@ -1,27 +1,40 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
-import './App.css';
+// import { Menu, Input, Sidebar, Segment, Icon, Header, Image, Button, Search } from 'semantic-ui-react'
+import { BrowserRouter, Route, Switch } from 'react-router-dom'
+import 'semantic-ui-css/semantic.min.css'
+import Common from './Common'
+import Swagger from './Swagger'
+
+function Home(props) {
+  console.log(props);
+  return <div>Home</div>;
+}
+
+
+
 
 class App extends Component {
+
   render() {
+  
     return (
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <p>
-            Edit <code>src/App.js</code> and save to reload.
-          </p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-        </header>
-      </div>
-    );
+      <div style={{ 'padding': '0 20px 0 20px' }}>
+        {/* TopBar */}
+      
+        <BrowserRouter>
+          <div id='browserRouter'>
+            <Common />
+            <Switch>
+              <Route exact path='/' component={Home} />
+              <Route path='/servicies/:serviceId/versions/:version' component={Swagger} />
+              <Route path='/home' component={Home} />
+            </Switch>
+          </div>
+        </BrowserRouter>
+        
+
+    </div>
+    )
   }
 }
 
