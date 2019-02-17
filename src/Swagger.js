@@ -3,7 +3,7 @@ import SwaggerUi, { presets } from 'swagger-ui';
 import 'swagger-ui/dist/swagger-ui.css';
 import {withRouter} from 'react-router-dom'
 import compareVersions from 'compare-versions';
-import { Dropdown, Header } from 'semantic-ui-react'
+import { Dropdown, Header, Menu } from 'semantic-ui-react'
 import config from 'react-global-configuration';
 import urljoin from 'url-join'
 // import LSCache from './localStorageCache.js'
@@ -19,8 +19,10 @@ import urljoin from 'url-join'
 
 class Swagger extends Component {
 
-  state = { versions: [], options: []} //versions and options are sorted by version always 
-  
+  state = { versions: [], options: [], activeItem: 'home'} //versions and options are sorted by version always 
+
+  handleItemClick = (e, { name }) => this.setState({ activeItem: name })
+
   _shouldFetchVersions = true;
   _shouldUpdateSwagger = true;
 
@@ -120,7 +122,7 @@ class Swagger extends Component {
   render(){
     console.log('Swagger Render', this.state);
     const { serviceId} = this.props.match.params;
-    const {options} = this.state;
+    const { options, activeItem} = this.state;
     const { servicies } = this.props;
     let service = undefined;
     if (servicies){
@@ -130,6 +132,29 @@ class Swagger extends Component {
 
     return <div>
       {service ? <Header as='h1'>{service.servicename}</Header> : undefined}
+      
+      <Menu pointing secondary>
+        <Menu.Item name='Spec.' active={activeItem === 'Spec.'} onClick={this.handleItemClick} />
+        <Menu.Item
+          name='Edit'
+          active={activeItem === 'Edit'}
+          onClick={this.handleItemClick}
+        />
+        {/* <Menu.Item
+          name='friends'
+          active={activeItem === 'friends'}
+          onClick={this.handleItemClick}
+        /> */}
+        {/* <Menu.Menu position='right'>
+          <Menu.Item
+            name='logout'
+            active={activeItem === 'logout'}
+            onClick={this.handleItemClick}
+          />
+        </Menu.Menu> */}
+      </Menu>
+
+
       <Dropdown 
         placeholder='Versions' fluid search selection 
         options={options} 
