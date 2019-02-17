@@ -6,9 +6,8 @@ import compareVersions from 'compare-versions';
 import { Dropdown, Header } from 'semantic-ui-react'
 import config from 'react-global-configuration';
 import urljoin from 'url-join'
-import LSCache from './localStorageCache.js'
-
-const lsCache = new LSCache();
+// import LSCache from './localStorageCache.js'
+// const lsCache = new LSCache();
 // const serviceListCacheTimeSec = 60 * 60;
 
 
@@ -16,7 +15,7 @@ const lsCache = new LSCache();
 // setStateやVersionが変わるたびにVersion情報のGetはしたくない
 //  -> SeriviceIdが変更したときのみ
 // setStateのたびにswaggerの表示をしたくない．
-//  -> 
+
 
 class Swagger extends Component {
 
@@ -28,24 +27,22 @@ class Swagger extends Component {
   fetchVersionData(){
     const { serviceId } = this.props.match.params;
     // if (this._shouldFetchVersions === true) {
-      console.log('fetch service data(versionList)');
-
-      fetch(urljoin(config.get('api'), `/versions/${serviceId}`), {
-        method: 'GET',
-        cors: 'true',
-      }).then(response => response.json())
-        .then(versions => {
-          // lsCache.put(`versions.${serviceId}`, versions);
-          versions.Items = versions.Items.sort((a, b) => compareVersions(b.version, a.version))
-          const options = versions.Items.map((v, i) => {
-            return { key: v.version, text: v.version, value: v.version, description: i === 0 ? `${v.tag}|latest` : v.tag }
-          })
-          // this._shouldFetchVersions = false;
-          this.setState({ versions: versions.Items, options: options });
-
-        }).catch(error => {
-          console.error('fetch error', error)
-        });
+    console.log('fetch service data(versionList)');
+    fetch(urljoin(config.get('api'), `/versions/${serviceId}`), {
+      method: 'GET',
+      cors: 'true',
+    }).then(response => response.json())
+      .then(versions => {
+        // lsCache.put(`versions.${serviceId}`, versions);
+        versions.Items = versions.Items.sort((a, b) => compareVersions(b.version, a.version))
+        const options = versions.Items.map((v, i) => {
+          return { key: v.version, text: v.version, value: v.version, description: i === 0 ? `${v.tag}|latest` : v.tag }
+        })
+        // this._shouldFetchVersions = false;
+        this.setState({ versions: versions.Items, options: options });
+      }).catch(error => {
+        console.error('fetch error', error)
+      });
       // const versions = { "Items": [{ "id": "66a36e77-fd00-3779-8097-17841f998f4d", "version": "0.0.1", "path": "swagger/auth/swagger0_0_1.yaml", "lastupdated": 1550318102190, "enable": true, "tag": "dev" }, { "id": "66a36e77-fd00-3779-8097-17841f998f4d", "version": "0.0.2", "path": "swagger/auth/swagger0_0_2.yaml", "lastupdated": 1550318102190, "enable": true, "tag": "prod" }, { "id": "66a36e77-fd00-3779-8097-17841f998f4d", "version": "1.0.0", "path": "swagger/auth/swagger1_0_0.yaml", "lastupdated": 1550318102190, "enable": true, "tag": "no" }] }
   }
 
@@ -109,10 +106,7 @@ class Swagger extends Component {
       }
       swaggerURL = urljoin(config.get('swagger-bucket'), versionSettings.path); 
     }
-    // console.log(this.props.match.params);
-    // console.log(versions);
-    // console.log('swaggerURL', swaggerURL);
-    
+
 
     SwaggerUi({
       dom_id: '#swaggerContainer',

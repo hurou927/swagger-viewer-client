@@ -11,7 +11,6 @@ const lsCache = new LSCache();
 const serviceListCacheTimeSec = 60 * 60;
 
 function Home(props) {
-  console.log(props);
   return <div>Home</div>;
 }
 
