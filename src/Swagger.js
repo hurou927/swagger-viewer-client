@@ -3,23 +3,27 @@ import SwaggerUi, { presets } from 'swagger-ui';
 import 'swagger-ui/dist/swagger-ui.css';
 import {withRouter} from 'react-router-dom'
 import compareVersions from 'compare-versions';
-import { Dropdown, Header, Menu } from 'semantic-ui-react'
+import { Dropdown, Header, Menu, List ,Label, Button, Image, Checkbox, Input, Modal} from 'semantic-ui-react'
 import config from 'react-global-configuration';
-import urljoin from 'url-join'
+import urljoin from 'url-join';
+import dateformat from 'dateformat';
+
 // import LSCache from './localStorageCache.js'
 // const lsCache = new LSCache();
 // const serviceListCacheTimeSec = 60 * 60;
 
 
-// serviceIdとversionはURLから得られる．
+// serviceIdとversionはURLから得られる．da
 // setStateやVersionが変わるたびにVersion情報のGetはしたくない
 //  -> SeriviceIdが変更したときのみ
 // setStateのたびにswaggerの表示をしたくない．
 
+const colors = ['red','orange','yellow','olive','green','teal','blue','violet','purple','pink','brown','grey','black',]
+
 
 class Swagger extends Component {
 
-  state = { versions: [], options: [], activeItem: 'home'} //versions and options are sorted by version always 
+  state = { versions: [], options: [], activeItem: 'Spec.'} //versions and options are sorted by version always 
 
   handleItemClick = (e, { name }) => this.setState({ activeItem: name })
 
@@ -67,6 +71,7 @@ class Swagger extends Component {
       console.log('getDerivedStateFromProps: initialize versions and options');
       return { versions: [], options: [], serviceId: nextParams.serviceId}
     }
+    return null
   }
 
   shouldComponentUpdate(nextProps, nextState) {
@@ -74,7 +79,8 @@ class Swagger extends Component {
     const nextParams = nextProps.match.params;
     const oldParams = this.props.match.params;
     this._shouldFetchVersions = this._shouldFetchVersions || (oldParams.serviceId !== nextParams.serviceId);
-    this._shouldUpdateSwagger = this._shouldUpdateSwagger || (oldParams.serviceId !== nextParams.serviceId) || (oldParams.version !== nextParams.version) || (this.state.versions.length === 0 && nextState.versions.length > 0);
+    this._shouldUpdateSwagger = this._shouldUpdateSwagger || (oldParams.serviceId !== nextParams.serviceId) || (oldParams.version !== nextParams.version) || (this.state.versions.length === 0 && nextState.versions.length > 0)
+      || (nextState.activeItem === 'Spec.' && this.state.activeItem !== 'Spec.');
     // versionsのフェッチが終わったらSwaggerの表示を行う．
     console.log('shouldComponentUpdate?', this._shouldFetchVersions, this._shouldUpdateSwagger );
     return true;
@@ -95,10 +101,14 @@ class Swagger extends Component {
 
   displaySwagger() {
     console.log('fetch swagger file!!');
-    // let swaggerURL = 'https://s3-ap-northeast-1.amazonaws.com/swagger-repository-test/swagger/auth/swagger0_0_1.yaml';
     let swaggerURL;
     const { version } = this.props.match.params;
-    const { versions} = this.state;
+    const { versions, activeItem} = this.state;
+    console.log('display swagger', activeItem);
+    if (activeItem !== 'Spec.') {
+      return;
+    }
+
     let versionSettings;
     if(versions.length > 0) {
       if(version == 'latest'){
@@ -119,10 +129,64 @@ class Swagger extends Component {
 
   }
 
+  
+  settingsComponent(){
+    const { versions } = this.state;
+    return (
+      <div>
+        <Modal trigger={<Button attached='top'>Upload</Button>}>
+          <Modal.Header>Select a Photo</Modal.Header>
+          <Modal.Content image>
+            <Image wrapped size='medium' src='https://react.semantic-ui.com/images/avatar/large/rachel.png' />
+            <Modal.Description>
+              <Header>Default Profile Image</Header>
+              <p>We've found the following gravatar image associated with your e-mail address.</p>
+              <p>Is it okay to use this photo?</p>
+            </Modal.Description>
+          </Modal.Content>
+        </Modal>
+        {/* <Button attached='top'>Upload</Button> */}
+        <List divided relaxed>
+          {
+            versions.map((v) => {
+              const date = new Date(v.lastupdated);
+              const majorVersion = parseInt((v.version || '0').split('.')[0] || '0');
+              return (
+                <List.Item key={v.version}>
+                  <List.Content floated='left' verticalAlign='middle' style={{ minWidth: '60px', textAlign: 'center' }}>
+                    <Label circular color={colors[majorVersion % 10]}>{majorVersion}</Label>
+                  </List.Content>
+                  <List.Content floated='left' verticalAlign='middle' style={{ minWidth: '300px' }}>
+                    <List.Header as='a'>{v.version}</List.Header>
+                    <List.Description as='a'>{`Updated ${dateformat(date, 'yyyy/mm/dd HH:MM')}`}</List.Description>
+                  </List.Content>
+
+                  <List.Content floated='left' verticalAlign='middle'>
+                    <Input placeholder='Tag...' defaultValue={v.tag} />
+                  </List.Content>
+
+                  <List.Content floated='left' verticalAlign='middle'>
+                    <Checkbox toggle defaultChecked={v.enable === true} />
+                  </List.Content>
+
+                  <List.Content floated='left' verticalAlign='middle'>
+                    <Button>Update</Button>
+                  </List.Content>
+                </List.Item>
+              )
+            })
+          }
+        </List>
+      </div>
+    );
+  }
+
+
   render(){
     console.log('Swagger Render', this.state);
     const { serviceId} = this.props.match.params;
-    const { options, activeItem} = this.state;
+    const { versions, options, activeItem} = this.state;
+    console.log(this.state);
     const { servicies } = this.props;
     let service = undefined;
     if (servicies){
@@ -140,30 +204,37 @@ class Swagger extends Component {
           active={activeItem === 'Edit'}
           onClick={this.handleItemClick}
         />
-        {/* <Menu.Item
-          name='friends'
-          active={activeItem === 'friends'}
-          onClick={this.handleItemClick}
-        /> */}
-        {/* <Menu.Menu position='right'>
-          <Menu.Item
-            name='logout'
-            active={activeItem === 'logout'}
-            onClick={this.handleItemClick}
-          />
-        </Menu.Menu> */}
       </Menu>
 
+      {/* <div style={{ 'maxWidth': '1000px', display: 'flex', 'flex-direction': 'column', 'justify-content': 'center' }}> */}
+      {      
+      <div>
+        {(()=>{
+          console.log('if..?',activeItem);
+          if (activeItem === 'Edit'){
+            return this.settingsComponent();
+          }
 
-      <Dropdown 
-        placeholder='Versions' fluid search selection 
-        options={options} 
-        onChange={(e, { value }) => { 
-          console.log(value);
-          this.props.history.push(`/servicies/${serviceId}/versions/${value}`);
-        }} 
-      />
-      <div id="swaggerContainer" />
+          return (
+            <div>
+              <Dropdown
+                placeholder='Versions' fluid search selection
+                options={options}
+                onChange={(e, { value }) => {
+                  console.log(value);
+                  this.props.history.push(`/servicies/${serviceId}/versions/${value}`);
+                }}
+              />
+              <div id="swaggerContainer" />
+            </div> 
+          )
+        })()}
+      </div> }
+      
+      {/* {this.settingsComponent()} */}
+
+      
+
     </div>;
   }
 }

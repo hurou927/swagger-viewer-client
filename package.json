@@ -15,6 +15,7 @@
     "case-sensitive-paths-webpack-plugin": "2.2.0",
     "compare-versions": "^3.4.0",
     "css-loader": "1.0.0",
+    "dateformat": "^3.0.3",
     "dotenv": "6.0.0",
     "dotenv-expand": "4.2.0",
     "eslint": "5.12.0",
