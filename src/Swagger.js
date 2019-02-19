@@ -131,7 +131,9 @@ class Swagger extends Component {
 
   
   settingsComponent(){
+    const { serviceId } = this.props.match.params;
     const { versions } = this.state;
+
     return (
       <div>
         <Modal trigger={<Button attached='top'>Upload</Button>}>
@@ -151,6 +153,9 @@ class Swagger extends Component {
             versions.map((v) => {
               const date = new Date(v.lastupdated);
               const majorVersion = parseInt((v.version || '0').split('.')[0] || '0');
+              let updateTagValue = v.tag;
+              let updateEnable = (v.enable === true);
+              let changed = false;
               return (
                 <List.Item key={v.version}>
                   <List.Content floated='left' verticalAlign='middle' style={{ minWidth: '60px', textAlign: 'center' }}>
@@ -162,15 +167,20 @@ class Swagger extends Component {
                   </List.Content>
 
                   <List.Content floated='left' verticalAlign='middle'>
-                    <Input placeholder='Tag...' defaultValue={v.tag} />
+                    <Input placeholder='Tag...' defaultValue={v.tag} onChange={(e, { value }) => { changed=true;updateTagValue=value}}/>
                   </List.Content>
 
                   <List.Content floated='left' verticalAlign='middle'>
-                    <Checkbox toggle defaultChecked={v.enable === true} />
+                    <Checkbox toggle defaultChecked={v.enable === true} onChange={(e, { checked }) => { changed=true;updateEnable=checked }}/>
                   </List.Content>
 
                   <List.Content floated='left' verticalAlign='middle'>
-                    <Button>Update</Button>
+                    <Button onClick={() => { 
+                      console.log(`call API${serviceId}/${v.version}`, updateTagValue, updateEnable, v.path);
+                      if(changed){
+                        //API Call
+                      }
+                    }}>Update</Button>
                   </List.Content>
                 </List.Item>
               )
