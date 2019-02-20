@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, useState } from 'react';
 import SwaggerUi, { presets } from 'swagger-ui';
 import 'swagger-ui/dist/swagger-ui.css';
 import {withRouter} from 'react-router-dom'
@@ -7,6 +7,10 @@ import { Dropdown, Header, Menu, List ,Label, Button, Image, Checkbox, Input, Mo
 import config from 'react-global-configuration';
 import urljoin from 'url-join';
 import dateformat from 'dateformat';
+import FileDrop from 'react-file-drop';
+import './FileDrop.css'
+const path = require('path');
+const yaml = require('js-yaml');
 
 // import LSCache from './localStorageCache.js'
 // const lsCache = new LSCache();
@@ -19,6 +23,126 @@ import dateformat from 'dateformat';
 // setStateのたびにswaggerの表示をしたくない．
 
 const colors = ['red','orange','yellow','olive','green','teal','blue','violet','purple','pink','brown','grey','black',]
+
+
+function validateSwagger(spec) { // return version
+  if (!spec.openapi) {
+    return {isSuccess: false, message: 'not swagger'}
+  }
+  if ((!spec.info) || (!spec.info.version)) {
+    return {isSuccess: false, message: 'missing version'}
+  }
+  const trimed = spec.info.version.trim();
+  const splited = trimed.split('.');
+  if (splited.length > 3 || splited.filter(s => isNaN(s)).length > 0) {
+    return { isSuccess: false, message: 'version must be "x.y.z"(x,y and z is number)' }
+  }
+  return {isSuccess: true, version: trimed};
+}
+
+
+function UploadSwagger(props){
+  // const styles = { border: '1px solid black', width: 600, color: 'black', padding: 20 };
+  return (
+    <div id="react-file-drop-demo" style={{ width: 400, height:400, border: '1px solid black', color: 'black', padding: 20 }}>
+      <FileDrop onDrop={(files, event) => {
+        const file = files[0];
+        const ext = path.extname(file.name);
+        if (! ['.yaml', '.yml', '.json'].includes(ext)){
+          return;
+        }
+        const reader = new FileReader();
+        reader.onloadend = (e) => {
+          // console.log(e.target.result)
+          let spec;
+          if (['.yaml', '.yml'].includes(ext)){
+            spec = yaml.safeLoad(e.target.result);
+          }else{
+            spec = JSON.parse(e.target.result);
+          }
+          const result = validateSwagger(spec);
+          if (result.isSuccess !== true) {
+            console.log(result.message);
+            return
+          }
+          console.log('version',result);
+        }
+        reader.readAsText(file);
+      }}>
+        Drop some files here!
+      </FileDrop>
+    </div >
+  );
+}
+
+
+
+function EditVersionInfo(props) {
+
+  const {serviceId, unixtime, version, tag, enable, path} = props;
+  const date = new Date(unixtime);
+  const majorVersion = parseInt((version || '0').split('.')[0] || '0');
+  let updateTagValue = tag;
+  let updateEnable = (enable === true);
+  // let changed = false;
+
+  const [isChanged, setIsChanged] = useState(false);
+
+
+  return (<List.Item key={version}>
+    <List.Content floated='left' verticalAlign='middle' style={{ minWidth: '60px', textAlign: 'center' }}>
+      <Label circular color={colors[majorVersion % 10]}>{majorVersion}</Label>
+    </List.Content>
+    <List.Content floated='left' verticalAlign='middle' style={{ minWidth: '300px' }}>
+      <List.Header as='a'>{version}</List.Header>
+      <List.Description as='a'>{`Updated ${dateformat(date, 'yyyy/mm/dd HH:MM')}`}</List.Description>
+    </List.Content>
+
+    <List.Content floated='left' verticalAlign='middle'>
+      <Input placeholder='Tag...' defaultValue={tag} onChange={(e, { value }) => { 
+        if(!(isChanged)) setIsChanged(true); 
+        updateTagValue = value;
+      }} />
+    </List.Content>
+
+    <List.Content floated='left' verticalAlign='middle'>
+      <Checkbox toggle defaultChecked={enable === true} onChange={(e, { checked }) => { 
+        if (!isChanged) setIsChanged(true); 
+        updateEnable = checked 
+      }} />
+    </List.Content>
+
+    <List.Content floated='left' verticalAlign='middle'>
+      <Button disabled={isChanged==false} onClick={() => {
+        // console.log(`call API${serviceId}/${version}`, updateTagValue, updateEnable, path);
+        const body = JSON.stringify({
+          enable: updateEnable,
+          path: path,
+          tag: updateTagValue,
+        });
+        console.log('Update:',body);
+        fetch(urljoin(config.get('api'), `/versions/${serviceId}/versions/${version}`), {
+          method: 'PATCH',
+          cors: 'true',
+          body: body,
+        }).then(response => {
+          // console.log(response.status);
+          setIsChanged(false);
+        }).catch(error => {
+          console.error('fetch error', error)
+        });
+         
+      }}>Update</Button>
+    </List.Content>
+  </List.Item>);
+}
+
+
+
+
+
+
+
 
 
 class Swagger extends Component {
@@ -42,14 +166,13 @@ class Swagger extends Component {
         // lsCache.put(`versions.${serviceId}`, versions);
         versions.Items = versions.Items.sort((a, b) => compareVersions(b.version, a.version))
         const options = versions.Items.map((v, i) => {
-          return { key: v.version, text: v.version, value: v.version, description: i === 0 ? `${v.tag}|latest` : v.tag }
+          return { key: v.version, text: v.version, value: v.version, description: v.tag }
         })
-        // this._shouldFetchVersions = false;
         this.setState({ versions: versions.Items, options: options });
       }).catch(error => {
         console.error('fetch error', error)
       });
-      // const versions = { "Items": [{ "id": "66a36e77-fd00-3779-8097-17841f998f4d", "version": "0.0.1", "path": "swagger/auth/swagger0_0_1.yaml", "lastupdated": 1550318102190, "enable": true, "tag": "dev" }, { "id": "66a36e77-fd00-3779-8097-17841f998f4d", "version": "0.0.2", "path": "swagger/auth/swagger0_0_2.yaml", "lastupdated": 1550318102190, "enable": true, "tag": "prod" }, { "id": "66a36e77-fd00-3779-8097-17841f998f4d", "version": "1.0.0", "path": "swagger/auth/swagger1_0_0.yaml", "lastupdated": 1550318102190, "enable": true, "tag": "no" }] }
+
   }
 
 
@@ -137,9 +260,10 @@ class Swagger extends Component {
     return (
       <div>
         <Modal trigger={<Button attached='top'>Upload</Button>}>
-          <Modal.Header>Select a Photo</Modal.Header>
+          <Modal.Header>Upload Swagger</Modal.Header>
           <Modal.Content image>
-            <Image wrapped size='medium' src='https://react.semantic-ui.com/images/avatar/large/rachel.png' />
+            {/* <Image wrapped size='medium' src='https://react.semantic-ui.com/images/avatar/large/rachel.png' /> */}
+            <UploadSwagger />
             <Modal.Description>
               <Header>Default Profile Image</Header>
               <p>We've found the following gravatar image associated with your e-mail address.</p>
@@ -147,43 +271,19 @@ class Swagger extends Component {
             </Modal.Description>
           </Modal.Content>
         </Modal>
-        {/* <Button attached='top'>Upload</Button> */}
+        {/* <UploadSwagger /> */}
         <List divided relaxed>
           {
             versions.map((v) => {
-              const date = new Date(v.lastupdated);
-              const majorVersion = parseInt((v.version || '0').split('.')[0] || '0');
-              let updateTagValue = v.tag;
-              let updateEnable = (v.enable === true);
-              let changed = false;
-              return (
-                <List.Item key={v.version}>
-                  <List.Content floated='left' verticalAlign='middle' style={{ minWidth: '60px', textAlign: 'center' }}>
-                    <Label circular color={colors[majorVersion % 10]}>{majorVersion}</Label>
-                  </List.Content>
-                  <List.Content floated='left' verticalAlign='middle' style={{ minWidth: '300px' }}>
-                    <List.Header as='a'>{v.version}</List.Header>
-                    <List.Description as='a'>{`Updated ${dateformat(date, 'yyyy/mm/dd HH:MM')}`}</List.Description>
-                  </List.Content>
-
-                  <List.Content floated='left' verticalAlign='middle'>
-                    <Input placeholder='Tag...' defaultValue={v.tag} onChange={(e, { value }) => { changed=true;updateTagValue=value}}/>
-                  </List.Content>
-
-                  <List.Content floated='left' verticalAlign='middle'>
-                    <Checkbox toggle defaultChecked={v.enable === true} onChange={(e, { checked }) => { changed=true;updateEnable=checked }}/>
-                  </List.Content>
-
-                  <List.Content floated='left' verticalAlign='middle'>
-                    <Button onClick={() => { 
-                      console.log(`call API${serviceId}/${v.version}`, updateTagValue, updateEnable, v.path);
-                      if(changed){
-                        //API Call
-                      }
-                    }}>Update</Button>
-                  </List.Content>
-                </List.Item>
-              )
+              return <EditVersionInfo 
+                serviceId={serviceId} 
+                unixtime={v.lastupdated} 
+                tag={v.tag} 
+                version={v.version} 
+                enable={v.enable} 
+                path={v.path}
+                key={v.version}
+                />
             })
           }
         </List>
@@ -241,10 +341,6 @@ class Swagger extends Component {
         })()}
       </div> }
       
-      {/* {this.settingsComponent()} */}
-
-      
-
     </div>;
   }
 }
