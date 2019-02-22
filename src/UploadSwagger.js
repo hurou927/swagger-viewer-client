@@ -26,12 +26,15 @@ function validateSwagger(spec) { // return version
 
 function UploadSwagger(props) {
   // const styles = { border: '1px solid black', width: 600, color: 'black', padding: 20 };
+  const onDrop = props.onDrop ? props.onDrop : (result,file,content)=>{};
   return (
-    <div id="react-file-drop-demo" style={{ width: 400, height: 400, border: '1px solid black', color: 'black', padding: 20 }}>
+    <div id="react-file-drop-demo" style={{ width: 300, height: 300, border: '1px solid black', color: 'black', padding: 20 }}>
       <FileDrop onDrop={(files, event) => {
+        console.log(files);
         const file = files[0];
         const ext = path.extname(file.name);
         if (!['.yaml', '.yml', '.json'].includes(ext)) {
+          onDrop({ isSuccess: false, message: 'file format error' }, file, null);
           return;
         }
         const reader = new FileReader();
@@ -44,10 +47,11 @@ function UploadSwagger(props) {
             spec = JSON.parse(e.target.result);
           }
           const result = validateSwagger(spec);
-          if (result.isSuccess !== true) {
-            console.log(result.message);
-            return
-          }
+          // if (result.isSuccess !== true) {
+          //   console.log(result.message);
+          //   return
+          // }
+          onDrop(result, file, e.target.result);
           console.log('version', result);
         }
         reader.readAsText(file);

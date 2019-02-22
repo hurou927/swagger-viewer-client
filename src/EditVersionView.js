@@ -76,12 +76,16 @@ function EditVersionView(props){
   const { versions } = props;
 
   return (
-    <div>
+    <div style={{minWidth:'800px'}}>
       <Modal trigger={<Button attached='top'>Upload</Button>}>
         <Modal.Header>Upload Swagger</Modal.Header>
         <Modal.Content image>
-          <UploadSwagger />
-          <Modal.Description>
+          <UploadSwagger
+            onDrop={(result,file,content)=>{
+              console.log(result, file);
+              
+            }}/>
+          <Modal.Description style={{padding: '50px'}}>
             <Header>Default Profile Image</Header>
             <p>We've found the following gravatar image associated with your e-mail address.</p>
             <p>Is it okay to use this photo?</p>
@@ -89,7 +93,7 @@ function EditVersionView(props){
         </Modal.Content>
       </Modal>
 
-      <List divided relaxed>
+      <List divided relaxed verticalAlign='middle'>
         {
           versions.map((v) => {
             return <EditVersionInfo

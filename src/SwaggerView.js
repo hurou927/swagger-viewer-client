@@ -12,7 +12,7 @@ function SwaggerView (props) {
   const {versions} = props;
   let versionSettings;
   let swaggerURL;
-  let options;
+  let options = [];
   if (versions.length > 0) {
     if (version == 'latest') {
       versionSettings = versions[0];
