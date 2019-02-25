@@ -77,22 +77,7 @@ function EditVersionView(props){
 
   return (
     <div style={{minWidth:'800px'}}>
-      <Modal trigger={<Button attached='top'>Upload</Button>}>
-        <Modal.Header>Upload Swagger</Modal.Header>
-        <Modal.Content image>
-          <UploadSwagger
-            onDrop={(result,file,content)=>{
-              console.log(result, file);
-              
-            }}/>
-          <Modal.Description style={{padding: '50px'}}>
-            <Header>Default Profile Image</Header>
-            <p>We've found the following gravatar image associated with your e-mail address.</p>
-            <p>Is it okay to use this photo?</p>
-          </Modal.Description>
-        </Modal.Content>
-      </Modal>
-
+      <UploadSwagger/>
       <List divided relaxed verticalAlign='middle'>
         {
           versions.map((v) => {
