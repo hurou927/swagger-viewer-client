@@ -4,6 +4,8 @@ const getTimeSec = () => {
   return Math.floor((new Date()).getTime() / 1000)
 }
 
+const keyListName = 'KeyList'
+
 class LSCache {
   constructor(prefix='lscache'){
     this.prefix = prefix
@@ -13,8 +15,21 @@ class LSCache {
     return `${this.prefix}.${key}`;
   }
 
+  clear() {
+    const keyList = JSON.parse(window.localStorage.getItem(this.getKeyName(keyListName)) || '{"keys":[]}');
+    keyList.keys.forEach(v=>{
+      window.localStorage.removeItem(v);
+    })
+  }
+
   put(key, value){
-    window.localStorage.setItem(this.getKeyName(key), JSON.stringify({ value: value, time: getTimeSec()})) 
+    const keyName = this.getKeyName(key)
+    const keyList = JSON.parse(window.localStorage.getItem(this.getKeyName(keyListName)) || '{"keys":[]}');
+    if (!(keyName in keyList.keys)) {
+      keyList.keys.push(keyName);
+    }
+    window.localStorage.setItem(this.getKeyName(keyListName), JSON.stringify(keyList))
+    window.localStorage.setItem(keyName, JSON.stringify({ value: value, time: getTimeSec()})) 
   }
 
   get(key, ttl=undefined){

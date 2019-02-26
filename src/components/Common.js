@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Menu, Input, Sidebar} from 'semantic-ui-react'
+import { Menu, Input, Sidebar, Icon} from 'semantic-ui-react'
 import { withRouter } from 'react-router-dom'
 import 'semantic-ui-css/semantic.min.css'
 // import LSCache from '../common/localStorageCache.js'
@@ -67,6 +67,10 @@ class Common extends Component {
 
             <Menu.Item>
               <Input focus placeholder='Search...' onChange={this.handleInputStringChange} />
+            </Menu.Item>
+            <Menu.Item name='plus circle' as='a' onClick={() => { this.setState({ visible: false }); this.props.history.push(`/create-service`); }} >
+              <Icon name='plus circle' />
+              add Service
             </Menu.Item>
             {
               servicies.map((s, v) => {
