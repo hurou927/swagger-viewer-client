@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { Menu, Input, Sidebar} from 'semantic-ui-react'
 import { withRouter } from 'react-router-dom'
 import 'semantic-ui-css/semantic.min.css'
-import LSCache from './localStorageCache.js'
+// import LSCache from '../common/localStorageCache.js'
 
 
 class Common extends Component {

@@ -4,7 +4,7 @@ import { BrowserRouter, Route, Switch } from 'react-router-dom'
 import 'semantic-ui-css/semantic.min.css'
 import Common from './Common'
 import Swagger from './Swagger'
-import LSCache from './localStorageCache.js'
+import LSCache from '../common/localStorageCache.js'
 import config from 'react-global-configuration';
 import urljoin from 'url-join'
 const lsCache = new LSCache();

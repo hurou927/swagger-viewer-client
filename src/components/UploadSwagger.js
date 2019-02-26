@@ -100,7 +100,7 @@ function UploadSwagger(props) {
   const [fileInfo, setFileInfo] = useState({ enable: false, name: undefined, size: undefined, version: undefined, contents: undefined });
   const { serviceId } = props.match.params;
   const onDrop = props.onDrop ? props.onDrop : (result,file,contents)=>{
-    console.log(result, file, contents)
+    // console.log(result, file, contents)
     if(result.isSuccess !== true) {
       setFileInfo({ enable: false, name: undefined, size: undefined, version: undefined, contents: undefined })
     } else {

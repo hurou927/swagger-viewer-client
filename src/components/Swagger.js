@@ -5,7 +5,7 @@ import compareVersions from 'compare-versions';
 import { Menu} from 'semantic-ui-react'
 import config from 'react-global-configuration';
 import urljoin from 'url-join';
-import './FileDrop.css'
+import '../style/FileDrop.css'
 import SwaggerView from './SwaggerView'
 import EditVersionView from './EditVersionView';
 // import fetch from 'node-fetch';
