@@ -4,7 +4,7 @@ import 'swagger-ui/dist/swagger-ui.css';
 import dateformat from 'dateformat';
 import urljoin from 'url-join';
 import config from 'react-global-configuration';
-import { Header, List, Label, Button, Checkbox, Input, Modal } from 'semantic-ui-react';
+import { List, Label, Button, Checkbox, Input } from 'semantic-ui-react';
 import UploadSwagger from './UploadSwagger';
 
 const colors = ['red', 'orange', 'yellow', 'olive', 'green', 'teal', 'blue', 'violet', 'purple', 'pink', 'brown', 'grey', 'black',]
@@ -45,7 +45,7 @@ function EditVersionInfo(props) {
     </List.Content>
 
     <List.Content floated='left' verticalAlign='middle'>
-      <Button disabled={isChanged == false} onClick={() => {
+      <Button disabled={isChanged === false} onClick={() => {
         // console.log(`call API${serviceId}/${version}`, updateTagValue, updateEnable, path);
         const body = JSON.stringify({
           enable: updateEnable,
@@ -69,14 +69,21 @@ function EditVersionInfo(props) {
   </List.Item>);
 }
 
+function EditServiceName(props) {
+  const {service} = props;
+  return (
+    < Input action='Update' placeholder='Searvicename...' style={{ 'marginBottom': '30px' }} defaultValue={service.servicename}/>
+  )
+}
 
 
 function EditVersionView(props){
   const { serviceId } = props.match.params;
-  const { versions } = props;
-
+  const { versions, service } = props;
+  console.log(props);
   return (
     <div style={{minWidth:'800px'}}>
+      <EditServiceName service={service}/>
       <UploadSwagger/>
       <List divided relaxed verticalAlign='middle'>
         {

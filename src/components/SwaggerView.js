@@ -14,7 +14,7 @@ function SwaggerView (props) {
   let swaggerURL;
   let options = [];
   if (versions.length > 0) {
-    if (version == 'latest') {
+    if (version === 'latest') {
       versionSettings = versions[0];
     } else {
       versionSettings = versions.filter(v => v.version === version)[0];

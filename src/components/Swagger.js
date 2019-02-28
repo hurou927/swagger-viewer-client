@@ -11,11 +11,12 @@ import EditVersionView from './EditVersionView';
 // import fetch from 'node-fetch';
 
 function ViewComponent(props){
-  const { versions, activeItem, servicies } = props;
+  const { versions, activeItem, servicies, service } = props;
+ 
   if (activeItem === 'Edit') {
-    return <EditVersionView versions={versions} servicies={servicies} />
+    return <EditVersionView versions={versions} servicies={servicies} service={service}/>
   } else {
-    return <SwaggerView versions={versions} servicies={servicies}/>
+    return <SwaggerView versions={versions} servicies={servicies} service={service}/>
   }
 }
 
@@ -25,10 +26,7 @@ function Swagger (props) {
   const { serviceId } = props.match.params;
 
   const { servicies } = props;
-  // let service = undefined;
-  // if (servicies) {
-  //   service = servicies.filter(service => service.id === serviceId)[0]
-  // }
+  const service = servicies.filter(v => v.id === serviceId)[0]
   
   useMemo(() => {
     console.log('fetch service version list');
@@ -38,7 +36,6 @@ function Swagger (props) {
     }).then(response => response.json())
       .then(versions => {
         versions.Items = versions.Items.sort((a, b) => compareVersions(b.version, a.version))
-        // console.log(versions.Items);
         setVersions(versions.Items);
       }).catch(error => {
         console.error('fetch error', error)
@@ -53,7 +50,7 @@ function Swagger (props) {
       <Menu.Item name='Edit' active={activeItem === 'Edit'} onClick={(e, { name }) => setActiveItem(name)}/>
     </Menu>
 
-    <ViewComponent activeItem={activeItem} versions={versions} service={servicies}/>
+    <ViewComponent activeItem={activeItem} versions={versions} servicies={servicies} service={service}/>
 
   </div>;
 }
