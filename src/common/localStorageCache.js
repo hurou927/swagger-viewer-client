@@ -15,7 +15,7 @@ class LSCache {
     return `${this.prefix}.${key}`;
   }
 
-  clear() {
+  allClear() {
     const keyList = JSON.parse(window.localStorage.getItem(this.getKeyName(keyListName)) || '{"keys":[]}');
     keyList.keys.forEach(v=>{
       window.localStorage.removeItem(v);

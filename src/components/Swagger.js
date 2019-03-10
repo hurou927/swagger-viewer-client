@@ -8,6 +8,7 @@ import urljoin from 'url-join';
 import '../style/FileDrop.css'
 import SwaggerView from './SwaggerView'
 import EditVersionView from './EditVersionView';
+import axios from 'axios';
 // import fetch from 'node-fetch';
 
 function ViewComponent(props){
@@ -30,16 +31,20 @@ function Swagger (props) {
   
   useMemo(() => {
     console.log('fetch service version list');
-    fetch(urljoin(config.get('api'), `/versions/${serviceId}`), {
-      method: 'GET',
-      cors: 'true',
-    }).then(response => response.json())
-      .then(versions => {
-        versions.Items = versions.Items.sort((a, b) => compareVersions(b.version, a.version))
-        setVersions(versions.Items);
-      }).catch(error => {
-        console.error('fetch error', error)
-      }); 
+    axios({
+      method: 'get',
+      url: urljoin(config.get('api'), `/versions/${serviceId}`),
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+      }
+    }).then(res => {
+      const versions = res.data;
+      versions.Items = versions.Items.sort((a, b) => compareVersions(b.version, a.version))
+      setVersions(versions.Items);
+    }).catch(err => {
+      console.log(err.response);
+      setVersions([]);
+    })
   }, [props.match.params.serviceId]);
 
   return <div>

@@ -21,7 +21,8 @@ function SwaggerView (props) {
     }
     swaggerURL = urljoin(config.get('swagger-bucket'), versionSettings.path);
 
-    options = versions.map((v, i) => {
+    options = versions
+      .filter( v => v.enable === true) .map((v, i) => {
       return { key: v.version, text: v.version, value: v.version, description: v.tag }
     })
   }

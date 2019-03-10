@@ -6,6 +6,7 @@ import urljoin from 'url-join';
 import config from 'react-global-configuration';
 import { List, Label, Button, Checkbox, Input } from 'semantic-ui-react';
 import UploadSwagger from './UploadSwagger';
+import axios from 'axios';
 
 const colors = ['red', 'orange', 'yellow', 'olive', 'green', 'teal', 'blue', 'violet', 'purple', 'pink', 'brown', 'grey', 'black',]
 
@@ -15,10 +16,7 @@ function EditVersionInfo(props) {
   const { serviceId, unixtime, version, tag, enable, path } = props;
   const date = new Date(unixtime);
   const majorVersion = parseInt((version || '0').split('.')[0] || '0');
-  let updateTagValue = tag;
-  let updateEnable = (enable === true);
-
-  const [isChanged, setIsChanged] = useState(false);
+  const [state, setState] = useState({ isChanged: false, updateTagValue: tag, updateEnable: (enable === true)})
 
 
   return (<List.Item key={version}>
@@ -32,38 +30,37 @@ function EditVersionInfo(props) {
 
     <List.Content floated='left' verticalAlign='middle'>
       <Input placeholder='Tag...' defaultValue={tag} onChange={(e, { value }) => {
-        if (!(isChanged)) setIsChanged(true);
-        updateTagValue = value;
+        setState({ ...state, isChanged: true, updateTagValue: value });
       }} />
     </List.Content>
 
     <List.Content floated='left' verticalAlign='middle'>
       <Checkbox toggle defaultChecked={enable === true} onChange={(e, { checked }) => {
-        if (!isChanged) setIsChanged(true);
-        updateEnable = checked
+        setState({ ...state, isChanged: true, updateEnable: checked });
       }} />
     </List.Content>
 
     <List.Content floated='left' verticalAlign='middle'>
-      <Button disabled={isChanged === false} onClick={() => {
-        // console.log(`call API${serviceId}/${version}`, updateTagValue, updateEnable, path);
-        const body = JSON.stringify({
-          enable: updateEnable,
+      <Button disabled={state.isChanged === false} onClick={() => {
+        // console.log(`call API${serviceId}/${version}`, state.updateTagValue, updateEnable, path);
+        const body = {
+          enable: state.updateEnable,
           path: path,
-          tag: updateTagValue,
-        });
+          tag: state.updateTagValue,
+        };
         console.log('Update:', body);
-        fetch(urljoin(config.get('api'), `/versions/${serviceId}/versions/${version}`), {
-          method: 'PATCH',
-          cors: 'true',
-          body: body,
-        }).then(response => {
-          // console.log(response.status);
-          setIsChanged(false);
-        }).catch(error => {
-          console.error('fetch error', error)
-        });
-
+        axios({
+          method: 'patch',
+          url: urljoin(config.get('api'), `/versions/${serviceId}/versions/${version}`),
+          headers: {
+            'Content-Type': 'application/json; charset=utf-8',
+          },
+          data: body
+        }).then(res => {
+          setState({ ...state, isChanged: false});
+        }).catch(err => {
+          console.error('fetch error', err.response)
+        })
       }}>Update</Button>
     </List.Content>
   </List.Item>);
@@ -71,8 +68,34 @@ function EditVersionInfo(props) {
 
 function EditServiceName(props) {
   const {service} = props;
+  const [name, setName] = useState(service.servicename)
   return (
-    < Input action='Update' placeholder='Searvicename...' style={{ 'marginBottom': '30px' }} defaultValue={service.servicename}/>
+    < Input 
+      // action='Update'
+      action={{
+        icon: 'edit', onClick: (event, data) => { 
+          console.log(name);
+          axios({
+            method: 'patch',
+            url: urljoin(config.get('api'), `/services/${props.serviceId}`),
+            headers: {
+              'Content-Type': 'application/json; charset=utf-8',
+            },
+            data: {
+              servicename: name,
+            }
+          }).then(res => {
+            console.log(res);
+          }).catch(err => {
+            console.error('fetch error', err.response)
+          })
+        }
+      }}
+      placeholder='Searvicename...'
+      style={{ 'marginBottom': '30px' }}
+      defaultValue={service.servicename}
+      onChange = {(e,{value}) => {setName(value)}}
+      />
   )
 }
 
@@ -83,7 +106,7 @@ function EditVersionView(props){
   console.log(props);
   return (
     <div style={{minWidth:'800px'}}>
-      <EditServiceName service={service}/>
+      <EditServiceName service={service} serviceId={serviceId}/>
       <UploadSwagger/>
       <List divided relaxed verticalAlign='middle'>
         {

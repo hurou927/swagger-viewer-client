@@ -3,7 +3,8 @@ import { Menu, Input, Sidebar, Icon} from 'semantic-ui-react'
 import { withRouter } from 'react-router-dom'
 import 'semantic-ui-css/semantic.min.css'
 // import LSCache from '../common/localStorageCache.js'
-
+import LSCache from '../common/localStorageCache.js'
+const lsCache = new LSCache();
 
 class Common extends Component {
 
@@ -46,9 +47,17 @@ class Common extends Component {
               onClick={this.handleShowClick}
             />
             <Menu.Menu position='right'>
-              <Menu.Item>
+              {/* <Menu.Item>
                 <Input icon='search' placeholder='Search...' />
-              </Menu.Item>
+              </Menu.Item> */}
+              <Menu.Item
+                name='Clear Cache'
+                // active={activeItem === 'closest'}
+                onClick={()=>{
+                  console.log('cache clear');
+                  lsCache.allClear();
+                }}
+              />
             </Menu.Menu>
           </Menu>
         </div>
